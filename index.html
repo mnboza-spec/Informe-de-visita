@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GEMSA - Generador de Informes Técnicos de Servicio</title>
+    <!-- Google Fonts for premium typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- FontAwesome for modern icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Editor Sidebar Panel -->
+        <aside class="editor-panel">
+            <header class="editor-header">
+                <div class="logo-area">
+                    <i class="fa-solid fa-file-invoice-dollar brand-icon"></i>
+                    <div>
+                        <h1>GEMSA</h1>
+                        <p>SERVICIOS GENERALES</p>
+                    </div>
+                </div>
+                <div class="app-title-badge">Generador de Informes</div>
+            </header>
+
+            <div class="editor-content">
+                <!-- Action Buttons Card -->
+                <section class="editor-card actions-card">
+                    <h3 class="card-title"><i class="fa-solid fa-gears"></i> Acciones del Reporte</h3>
+                    <div class="action-grid">
+                        <button id="btn-reset" class="btn btn-danger" title="Limpiar todo el formulario">
+                            <i class="fa-solid fa-trash-can"></i> Restablecer
+                        </button>
+                        <button id="btn-print" class="btn btn-primary" title="Imprimir o Guardar como PDF">
+                            <i class="fa-solid fa-print"></i> Imprimir / PDF
+                        </button>
+                        <button id="btn-export" class="btn btn-secondary" title="Guardar informe en un archivo JSON">
+                            <i class="fa-solid fa-floppy-disk"></i> Guardar Archivo
+                        </button>
+                        <button id="btn-import-trigger" class="btn btn-secondary" title="Abrir informe desde un archivo JSON">
+                            <i class="fa-solid fa-folder-open"></i> Abrir Archivo
+                        </button>
+                        <input type="file" id="input-import" accept=".json" style="display: none;">
+                    </div>
+                </section>
+
+                <!-- General Data Form -->
+                <section class="editor-card">
+                    <h3 class="card-title"><i class="fa-solid fa-circle-info"></i> Información General</h3>
+                    
+                    <div class="form-group">
+                        <label for="field-client">Cliente / Empresa</label>
+                        <input type="text" id="field-client" placeholder="Nombre del Cliente o Empresa" class="form-control">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-7">
+                            <label for="field-code">Código del Informe</label>
+                            <div class="input-with-action">
+                                <input type="text" id="field-code" placeholder="IT-2026-XXXX" class="form-control font-mono">
+                                <button id="btn-gen-code" class="btn btn-icon" title="Generar código automático">
+                                    <i class="fa-solid fa-rotate"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-group col-5">
+                            <label for="field-date">Fecha</label>
+                            <input type="date" id="field-date" class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="field-name">Título del Servicio</label>
+                        <input type="text" id="field-name" placeholder="Ej. Mantenimiento Preventivo de Tablero" class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="field-contact">Contacto (Nombre / Teléfono / Correo)</label>
+                        <input type="text" id="field-contact" placeholder="Ej. Juan Pérez / 999 999 999 / juan@empresa.com" class="form-control">
+                    </div>
+                </section>
+
+                <!-- Technical Details Section -->
+                <section class="editor-card">
+                    <h3 class="card-title"><i class="fa-solid fa-align-left"></i> 1. Descripción Técnica</h3>
+                    <div class="form-group">
+                        <label for="field-description">Detalle de Actividades y Metodología</label>
+                        <textarea id="field-description" rows="8" placeholder="Detalle minuciosamente las especificaciones técnicas del trabajo, el estado inicial del área evaluada, la metodología aplicada, las herramientas/materiales utilizados y las actividades paso a paso ejecutadas por el equipo..." class="form-control"></textarea>
+                    </div>
+                </section>
+
+                <!-- Photographic Report Section -->
+                <section class="editor-card">
+                    <h3 class="card-title"><i class="fa-solid fa-images"></i> 2. Reporte Fotográfico</h3>
+                    <div id="photos-editor-list">
+                        <!-- Rendered via JS -->
+                    </div>
+                    <button id="btn-add-photo" class="btn btn-secondary w-100 mt-2">
+                        <i class="fa-solid fa-plus"></i> Agregar Foto
+                    </button>
+                </section>
+
+                <!-- Conclusions and Recommendations -->
+                <section class="editor-card">
+                    <h3 class="card-title"><i class="fa-solid fa-clipboard-check"></i> 3. Conclusiones y Recomendaciones</h3>
+                    <div class="form-group">
+                        <label for="field-conclusions">Comentarios Finales y Sugerencias de Uso</label>
+                        <textarea id="field-conclusions" rows="5" placeholder="Indique los comentarios de cierre técnico y las recomendaciones preventivas de uso para el cliente final..." class="form-control"></textarea>
+                    </div>
+                </section>
+
+                <!-- Saved Drafts Section -->
+                <section class="editor-card drafts-card">
+                    <h3 class="card-title"><i class="fa-solid fa-folder-open"></i> Informes Guardados (Borradores)</h3>
+                    <div id="drafts-list" class="drafts-list">
+                        <!-- Rendered via JS -->
+                        <p class="no-drafts-text">No hay borradores guardados localmente.</p>
+                    </div>
+                    <button id="btn-save-draft" class="btn btn-secondary w-100 mt-2">
+                        <i class="fa-solid fa-floppy-disk"></i> Guardar Borrador Local
+                    </button>
+                </section>
+            </div>
+            
+            <footer class="sidebar-footer">
+                <p>&copy; 2026 GEMSA Servicios Generales</p>
+                <p>Desarrollado con precisión y excelencia</p>
+            </footer>
+        </aside>
+
+        <!-- Live Preview Panel (A4 Sheet representation) -->
+        <main class="preview-panel">
+            <div class="preview-toolbar">
+                <span><i class="fa-solid fa-eye"></i> Vista Previa en Tiempo Real (Formato de Impresión A4)</span>
+            </div>
+            
+            <div class="sheet-container">
+                <!-- Page 1 -->
+                <article class="a4-sheet" id="preview-sheet">
+                    <!-- Report Header Table/Layout -->
+                    <header class="report-header">
+                        <div class="header-top-border"></div>
+                        <div class="header-main-grid">
+                            <div class="header-logo-box">
+                                <img src="gemsa_logo.jpg" alt="Logo GEMSA" class="report-logo" onerror="this.src='https://placehold.co/240x100?text=GEMSA+LOGO'">
+                            </div>
+                            <div class="header-title-box">
+                                <h2>INFORME DE VISITA TÉCNICA</h2>
+                            </div>
+                        </div>
+                        
+                        <!-- Client & Info Meta Table -->
+                        <table class="report-meta-table">
+                            <tr>
+                                <td class="meta-label">Cliente / Empresa:</td>
+                                <td class="meta-val" id="prev-client">[Nombre del Cliente / Empresa]</td>
+                                <td class="meta-label">Código:</td>
+                                <td class="meta-val font-mono" id="prev-code">[IT-2026-XXXX]</td>
+                            </tr>
+                            <tr>
+                                <td class="meta-label">Servicio:</td>
+                                <td class="meta-val highlight-val" id="prev-name">[Título del Servicio Ejecutado]</td>
+                                <td class="meta-label">Fecha:</td>
+                                <td class="meta-val" id="prev-date">[Día de la generación]</td>
+                            </tr>
+                            <tr>
+                                <td class="meta-label">Contacto:</td>
+                                <td class="meta-val" colspan="3" id="prev-contact">[Nombre / Teléfono / Correo del Contacto]</td>
+                            </tr>
+                        </table>
+                    </header>
+
+                    <!-- Report Content Area -->
+                    <div class="report-body">
+                        <!-- Section 1 -->
+                        <section class="report-section">
+                            <h3 class="section-title"><span class="section-num">1</span> Descripción del Servicio</h3>
+                            <div class="section-divider"></div>
+                            <div class="section-text-content" id="prev-description">
+                                [Detalle minuciosamente las especificaciones técnicas del trabajo, el estado inicial del área evaluada, la metodología aplicada, las herramientas/materiales utilizados y las actividades paso a paso ejecutadas por el equipo.]
+                            </div>
+                        </section>
+
+                        <!-- Section 2 -->
+                        <section class="report-section">
+                            <h3 class="section-title"><span class="section-num">2</span> Reporte Fotográfico</h3>
+                            <div class="section-divider"></div>
+                            
+                            <div id="photos-preview-list" class="photo-report-layout">
+                                <!-- Rendered via JS -->
+                            </div>
+                        </section>
+
+                        <!-- Section 3 -->
+                        <section class="report-section">
+                            <h3 class="section-title"><span class="section-num">3</span> Conclusiones y Recomendaciones</h3>
+                            <div class="section-divider"></div>
+                            <div class="section-text-content" id="prev-conclusions">
+                                [Indique los comentarios de cierre técnico y las recomendaciones preventivas de uso para el cliente final.]
+                            </div>
+                        </section>
+                    </div>
+
+                    <!-- Report Footer -->
+                    <footer class="report-print-footer">
+                        <div class="footer-line"></div>
+                        <div class="footer-meta-grid">
+                            <span>GEMSA SERVICIOS GENERALES S.A.C.</span>
+                            <span class="page-number-indicator">Pág. 1 de 1</span>
+                        </div>
+                    </footer>
+                </article>
+            </div>
+        </main>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="toast hidden">
+        <i class="fa-solid fa-circle-check toast-icon"></i>
+        <span id="toast-message">Mensaje</span>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
