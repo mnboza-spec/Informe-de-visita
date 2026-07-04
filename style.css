@@ -876,6 +876,193 @@ textarea.form-control {
 }
 
 /* ==========================================================================
+   MOBILE TABS & VOICE BUTTON STYLES
+   ========================================================================== */
+.mobile-tabs {
+    display: none;
+    justify-content: space-around;
+    background-color: var(--primary-dark);
+    border-bottom: 1px solid var(--border-color);
+    padding: 8px 12px;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.mobile-tab-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all var(--transition-speed);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    justify-content: center;
+    max-width: 200px;
+}
+
+.mobile-tab-btn:hover {
+    color: #ffffff;
+}
+
+.mobile-tab-btn.active {
+    color: #ffffff;
+    background-color: var(--accent);
+}
+
+/* Voice Dictation Button & Label Row */
+.label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.label-row label {
+    margin-bottom: 0;
+}
+
+.btn-voice {
+    background-color: #334155;
+    border: 1px solid var(--border-color);
+    color: var(--text-editor);
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--transition-speed);
+    font-size: 0.75rem;
+}
+
+.btn-voice:hover {
+    background-color: #475569;
+    color: var(--accent);
+    border-color: var(--accent);
+}
+
+.btn-voice.recording {
+    background-color: var(--danger);
+    border-color: var(--danger);
+    color: #ffffff;
+    animation: pulse-mic 1.5s infinite;
+}
+
+@keyframes pulse-mic {
+    0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+    70% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+/* ==========================================================================
+   MOBILE & TABLET RESPONSIVE RULES
+   ========================================================================== */
+@media (max-width: 992px) {
+    .mobile-tabs {
+        display: flex;
+    }
+    
+    .app-container {
+        flex-direction: column;
+        height: calc(100vh - 53px);
+        overflow: hidden;
+    }
+    
+    .editor-panel {
+        width: 100% !important;
+        min-width: 100% !important;
+        max-width: 100% !important;
+        height: 100%;
+        border-right: none;
+    }
+    
+    .preview-panel {
+        width: 100% !important;
+        height: 100%;
+        display: none !important;
+    }
+    
+    /* Toggle behavior in JS */
+    .app-container.show-preview .editor-panel {
+        display: none !important;
+    }
+    
+    .app-container.show-preview .preview-panel {
+        display: flex !important;
+    }
+    
+    /* Responsive preview A4 sheet */
+    .sheet-container {
+        padding: 15px 10px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    
+    .a4-sheet {
+        width: 100% !important;
+        min-width: 100% !important;
+        max-width: 100% !important;
+        min-height: unset !important;
+        padding: 15mm 10mm;
+        margin: 0 auto;
+        box-shadow: none;
+        border-radius: 0;
+    }
+
+    .header-main-grid {
+        grid-template-columns: 180px 1fr;
+    }
+    
+    .report-meta-table td {
+        padding: 6px 10px;
+        font-size: 0.75rem;
+    }
+}
+
+@media (max-width: 600px) {
+    .header-main-grid {
+        grid-template-columns: 1fr;
+        border-bottom: 2px solid var(--primary-light);
+    }
+    
+    .header-logo-box {
+        border-right: none;
+        border-bottom: 2px solid var(--primary-light);
+        padding: 10px;
+    }
+    
+    .header-title-box {
+        padding: 10px;
+    }
+    
+    .header-title-box h2 {
+        font-size: 1rem;
+    }
+    
+    .report-meta-table td {
+        padding: 5px 8px;
+        font-size: 0.7rem;
+    }
+    
+    .photo-report-layout {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .action-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ==========================================================================
    PRINT MEDIA RULES (Crucial for PDF generation)
    ========================================================================== */
 @media print {
@@ -891,9 +1078,10 @@ textarea.form-control {
         height: auto !important;
     }
 
-    /* Hide entire editing sidebar and preview toolbar UI */
+    /* Hide entire editing sidebar, preview toolbar and mobile tabs UI */
     .editor-panel,
-    .preview-toolbar {
+    .preview-toolbar,
+    .mobile-tabs {
         display: none !important;
     }
 

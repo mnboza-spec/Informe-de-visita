@@ -13,7 +13,17 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="app-container">
+    <!-- Mobile Navigation Tabs -->
+    <div class="mobile-tabs" id="mobile-tabs">
+        <button class="mobile-tab-btn active" id="tab-edit-mode">
+            <i class="fa-solid fa-pen-to-square"></i> Formulario
+        </button>
+        <button class="mobile-tab-btn" id="tab-preview-mode">
+            <i class="fa-solid fa-eye"></i> Vista Previa
+        </button>
+    </div>
+
+    <div class="app-container" id="app-container">
         <!-- Editor Sidebar Panel -->
         <aside class="editor-panel">
             <header class="editor-header">
@@ -88,7 +98,12 @@
                 <section class="editor-card">
                     <h3 class="card-title"><i class="fa-solid fa-align-left"></i> 1. Descripción Técnica</h3>
                     <div class="form-group">
-                        <label for="field-description">Detalle de Actividades y Metodología</label>
+                        <div class="label-row">
+                            <label for="field-description">Detalle de Actividades y Metodología</label>
+                            <button type="button" class="btn-voice" data-target="field-description" title="Dictar por voz">
+                                <i class="fa-solid fa-microphone"></i>
+                            </button>
+                        </div>
                         <textarea id="field-description" rows="8" placeholder="Detalle minuciosamente las especificaciones técnicas del trabajo, el estado inicial del área evaluada, la metodología aplicada, las herramientas/materiales utilizados y las actividades paso a paso ejecutadas por el equipo..." class="form-control"></textarea>
                     </div>
                 </section>
@@ -108,7 +123,12 @@
                 <section class="editor-card">
                     <h3 class="card-title"><i class="fa-solid fa-clipboard-check"></i> 3. Conclusiones y Recomendaciones</h3>
                     <div class="form-group">
-                        <label for="field-conclusions">Comentarios Finales y Sugerencias de Uso</label>
+                        <div class="label-row">
+                            <label for="field-conclusions">Comentarios Finales y Sugerencias de Uso</label>
+                            <button type="button" class="btn-voice" data-target="field-conclusions" title="Dictar por voz">
+                                <i class="fa-solid fa-microphone"></i>
+                            </button>
+                        </div>
                         <textarea id="field-conclusions" rows="5" placeholder="Indique los comentarios de cierre técnico y las recomendaciones preventivas de uso para el cliente final..." class="form-control"></textarea>
                     </div>
                 </section>

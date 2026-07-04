@@ -715,6 +715,148 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // --- Mobile Tabs Logic ---
+    const tabEditMode = document.getElementById('tab-edit-mode');
+    const tabPreviewMode = document.getElementById('tab-preview-mode');
+    const appContainer = document.getElementById('app-container');
+
+    if (tabEditMode && tabPreviewMode && appContainer) {
+        tabEditMode.addEventListener('click', () => {
+            tabEditMode.classList.add('active');
+            tabPreviewMode.classList.remove('active');
+            appContainer.classList.remove('show-preview');
+        });
+
+        tabPreviewMode.addEventListener('click', () => {
+            tabPreviewMode.classList.add('active');
+            tabEditMode.classList.remove('active');
+            appContainer.classList.add('show-preview');
+        });
+    }
+
+    // --- Speech Recognition (Voice Input) ---
+    const voiceButtons = document.querySelectorAll('.btn-voice');
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    
+    if (SpeechRecognition) {
+        const recognition = new SpeechRecognition();
+        recognition.continuous = false;
+        recognition.lang = 'es-ES';
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+        
+        let activeTextarea = null;
+        let activeBtn = null;
+        let isRecognizing = false;
+
+        recognition.onstart = () => {
+            isRecognizing = true;
+            if (activeBtn) {
+                activeBtn.classList.add('recording');
+                const icon = activeBtn.querySelector('i');
+                if (icon) {
+                    icon.className = "fa-solid fa-microphone-slash";
+                }
+            }
+            showToast("Escuchando... hable ahora");
+        };
+
+        recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript;
+            if (activeTextarea) {
+                const startPos = activeTextarea.selectionStart;
+                const endPos = activeTextarea.selectionEnd;
+                const originalText = activeTextarea.value;
+                
+                const beforeText = originalText.substring(0, startPos);
+                const afterText = originalText.substring(endPos);
+                const prefixSpace = (beforeText.length > 0 && !beforeText.endsWith(' ')) ? ' ' : '';
+                
+                activeTextarea.value = beforeText + prefixSpace + transcript + afterText;
+                
+                const newCursorPos = startPos + prefixSpace.length + transcript.length;
+                activeTextarea.setSelectionRange(newCursorPos, newCursorPos);
+                
+                // Dispatch input event to update reportData state and preview
+                const inputEvent = new Event('input', { bubbles: true });
+                activeTextarea.dispatchEvent(inputEvent);
+                
+                showToast("Texto agregado por dictado de voz");
+            }
+        };
+
+        recognition.onerror = (event) => {
+            console.error("Speech recognition error:", event.error);
+            if (event.error === 'not-allowed') {
+                showToast("Error: Acceso al micrófono denegado", true);
+            } else if (event.error === 'no-speech') {
+                showToast("No se escuchó ninguna voz", true);
+            } else {
+                showToast(`Error de micrófono: ${event.error}`, true);
+            }
+            stopSpeechRecognition();
+        };
+
+        recognition.onend = () => {
+            stopSpeechRecognition();
+        };
+
+        function stopSpeechRecognition() {
+            isRecognizing = false;
+            if (activeBtn) {
+                activeBtn.classList.remove('recording');
+                const icon = activeBtn.querySelector('i');
+                if (icon) {
+                    icon.className = "fa-solid fa-microphone";
+                }
+            }
+            activeBtn = null;
+            activeTextarea = null;
+            try {
+                recognition.stop();
+            } catch (e) {}
+        }
+
+        voiceButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetId = btn.getAttribute('data-target');
+                const textarea = document.getElementById(targetId);
+                
+                if (!textarea) return;
+
+                if (isRecognizing) {
+                    const isSame = (activeBtn === btn);
+                    stopSpeechRecognition();
+                    
+                    if (!isSame) {
+                        startRecognitionFor(btn, textarea);
+                    }
+                } else {
+                    startRecognitionFor(btn, textarea);
+                }
+            });
+        });
+
+        function startRecognitionFor(btn, textarea) {
+            activeBtn = btn;
+            activeTextarea = textarea;
+            try {
+                recognition.start();
+            } catch (err) {
+                console.error("Failed to start speech recognition:", err);
+                showToast("Error al iniciar dictado por voz", true);
+                stopSpeechRecognition();
+            }
+        }
+    } else {
+        // Hide mic buttons if Speech Recognition is not supported by browser
+        voiceButtons.forEach(btn => {
+            btn.style.display = 'none';
+        });
+        console.warn("Speech Recognition API is not supported in this browser.");
+    }
+
     // --- App Start ---
     loadAutosave();
     renderDraftsList();
