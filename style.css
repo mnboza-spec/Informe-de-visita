@@ -875,6 +875,78 @@ textarea.form-control {
     pointer-events: none;
 }
 
+/* Real-time Preview Toggle Switch (Desktop) */
+.preview-toggle-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 15px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.toggle-label-text {
+    font-size: 0.8rem;
+    color: var(--text-editor);
+    font-weight: 500;
+}
+
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 36px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #475569;
+    transition: .25s ease;
+    border-radius: 18px;
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 12px;
+    width: 12px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .25s ease;
+    border-radius: 50%;
+}
+
+.toggle-switch input:checked + .toggle-slider {
+    background-color: var(--accent);
+}
+
+.toggle-switch input:checked + .toggle-slider:before {
+    transform: translateX(18px);
+}
+
+/* Toggle Preview behavior on Desktop */
+.app-container.hide-preview-desktop .preview-panel {
+    display: none !important;
+}
+
+.app-container.hide-preview-desktop .editor-panel {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
 /* ==========================================================================
    MOBILE TABS & VOICE BUTTON STYLES
    ========================================================================== */
@@ -987,6 +1059,10 @@ textarea.form-control {
     .preview-panel {
         width: 100% !important;
         height: 100%;
+        display: none !important;
+    }
+
+    .preview-toggle-wrapper {
         display: none !important;
     }
     

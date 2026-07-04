@@ -734,6 +734,30 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // --- Real-time Preview Toggle (Desktop) ---
+    const chkShowPreview = document.getElementById('chk-show-preview');
+    if (chkShowPreview && appContainer) {
+        // Load initial preference from LocalStorage
+        const savedToggle = localStorage.getItem('gemsa_show_preview_desktop');
+        if (savedToggle !== null) {
+            const isChecked = savedToggle === 'true';
+            chkShowPreview.checked = isChecked;
+            if (!isChecked) {
+                appContainer.classList.add('hide-preview-desktop');
+            }
+        }
+
+        chkShowPreview.addEventListener('change', (e) => {
+            const isChecked = e.target.checked;
+            localStorage.setItem('gemsa_show_preview_desktop', isChecked);
+            if (isChecked) {
+                appContainer.classList.remove('hide-preview-desktop');
+            } else {
+                appContainer.classList.add('hide-preview-desktop');
+            }
+        });
+    }
+
     // --- Speech Recognition (Voice Input) ---
     const voiceButtons = document.querySelectorAll('.btn-voice');
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
