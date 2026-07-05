@@ -491,7 +491,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Print
     btnPrint.addEventListener('click', () => {
+        const clientClean = reportData.client ? reportData.client.trim() : '';
+        const nameClean = reportData.name ? reportData.name.trim() : '';
+        const originalTitle = document.title;
+        if (clientClean || nameClean) {
+            const clientEscaped = clientClean.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ]/g, '_').replace(/_+/g, '_');
+            const nameEscaped = nameClean.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ]/g, '_').replace(/_+/g, '_');
+            document.title = `${clientEscaped || 'Cliente'}_${nameEscaped || 'Servicio'}`;
+        }
         window.print();
+        setTimeout(() => {
+            document.title = originalTitle;
+        }, 1000);
     });
 
     // Export JSON
@@ -503,7 +514,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(reportData, null, 2));
         const downloadAnchor = document.createElement('a');
-        const fileName = `${reportData.code || 'IT-SIN-CODIGO'}_${(reportData.client || 'CLIENTE').replace(/\s+/g, '_')}.json`;
+        
+        const clientClean = reportData.client ? reportData.client.trim() : '';
+        const nameClean = reportData.name ? reportData.name.trim() : '';
+        
+        const clientEscaped = clientClean.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ]/g, '_').replace(/_+/g, '_') || 'CLIENTE';
+        const nameEscaped = nameClean.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ]/g, '_').replace(/_+/g, '_') || 'SERVICIO';
+        
+        const fileName = `${clientEscaped}_${nameEscaped}.json`;
         
         downloadAnchor.setAttribute("href", dataStr);
         downloadAnchor.setAttribute("download", fileName);
