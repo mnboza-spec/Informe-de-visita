@@ -612,7 +612,7 @@ textarea.form-control {
 .a4-sheet {
     width: 210mm;
     min-height: 297mm;
-    padding: 12mm 15mm;
+    padding: 18mm 15mm;
     background-color: #ffffff;
     box-shadow: var(--shadow-sheet);
     border-radius: 4px;
@@ -626,7 +626,7 @@ textarea.form-control {
 
 /* Document Header Elements */
 .report-header {
-    margin-bottom: 15px;
+    margin-bottom: 20px;
 }
 
 .header-main-grid {
@@ -705,7 +705,7 @@ textarea.form-control {
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 25px;
 }
 
 .report-section {
@@ -740,7 +740,7 @@ textarea.form-control {
     height: 1.5px;
     background-color: var(--primary-light);
     width: 100%;
-    margin-bottom: 8px;
+    margin-bottom: 12px;
 }
 
 .section-text-content {
@@ -755,11 +755,11 @@ textarea.form-control {
 .photo-report-layout {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 10px;
+    gap: 15px;
 }
 
 .photo-card {
-    height: 140px;
+    height: 180px;
     border: 1.5px solid #cbd5e1;
     border-radius: 4px;
     overflow: hidden;
@@ -771,8 +771,8 @@ textarea.form-control {
 }
 
 .photo-card-header {
-    padding: 4px;
-    font-size: 0.65rem;
+    padding: 5px;
+    font-size: 0.7rem;
     font-weight: 700;
     text-align: center;
     color: #ffffff;
@@ -780,7 +780,7 @@ textarea.form-control {
 }
 
 .photo-card-img-wrapper {
-    height: 85px;
+    height: 110px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -796,10 +796,10 @@ textarea.form-control {
 }
 
 .photo-card-body {
-    padding: 4px 8px;
+    padding: 6px 8px;
     font-size: 0.68rem;
     color: #334155;
-    height: 55px;
+    height: 70px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
