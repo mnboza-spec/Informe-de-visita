@@ -65,6 +65,26 @@
                     </div>
                 </section>
 
+                <!-- AI Assistant Settings Card -->
+                <section class="editor-card ai-settings-card">
+                    <h3 class="card-title"><i class="fa-solid fa-robot"></i> Asistente de IA (OpenAI)</h3>
+                    <div class="form-group">
+                        <label for="field-api-key">API Key de OpenAI</label>
+                        <div class="input-with-action">
+                            <input type="password" id="field-api-key" placeholder="sk-proj-..." class="form-control font-mono">
+                            <button type="button" id="btn-toggle-api-key" class="btn btn-icon" title="Mostrar/Ocultar clave">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="ai-status-row">
+                        <button type="button" id="btn-test-connection" class="btn btn-secondary btn-sm">
+                            <i class="fa-solid fa-link"></i> Probar Conexión
+                        </button>
+                        <span id="ai-connection-status" class="status-badge status-offline">Sin configurar</span>
+                    </div>
+                </section>
+
                 <!-- General Data Form -->
                 <section class="editor-card">
                     <h3 class="card-title"><i class="fa-solid fa-circle-info"></i> Información General</h3>
@@ -112,6 +132,14 @@
                             </button>
                         </div>
                         <textarea id="field-description" rows="8" placeholder="Detalle minuciosamente las especificaciones técnicas del trabajo, el estado inicial del área evaluada, la metodología aplicada, las herramientas/materiales utilizados y las actividades paso a paso ejecutadas por el equipo..." class="form-control"></textarea>
+                        <div class="ai-action-bar">
+                            <button type="button" class="btn btn-sm btn-ai" id="btn-ai-improve-desc" title="Mejorar redacción técnica">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i> IA: Mejorar Redacción
+                            </button>
+                            <button type="button" class="btn btn-sm btn-ai" id="btn-ai-expand-desc" title="Expandir detalles técnicos">
+                                <i class="fa-solid fa-square-plus"></i> IA: Expandir Detalles
+                            </button>
+                        </div>
                     </div>
                 </section>
 
@@ -137,6 +165,14 @@
                             </button>
                         </div>
                         <textarea id="field-conclusions" rows="5" placeholder="Indique los comentarios de cierre técnico y las recomendaciones preventivas de uso para el cliente final..." class="form-control"></textarea>
+                        <div class="ai-action-bar">
+                            <button type="button" class="btn btn-sm btn-ai" id="btn-ai-gen-conclusions" title="Generar conclusiones automáticamente basadas en el informe">
+                                <i class="fa-solid fa-brain"></i> IA: Generar Conclusiones
+                            </button>
+                            <button type="button" class="btn btn-sm btn-ai" id="btn-ai-improve-conclusions" title="Mejorar redacción de conclusiones">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i> IA: Mejorar Redacción
+                            </button>
+                        </div>
                     </div>
                 </section>
 

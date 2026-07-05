@@ -184,7 +184,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
 
                 <div class="form-group mt-2">
-                    <label>Descripción de la Foto</label>
+                    <div class="label-row">
+                        <label>Descripción de la Foto</label>
+                        <button type="button" class="btn-ai-desc-photo ${photo.base64 ? '' : 'hidden'}" data-id="${photo.id}" title="Describir imagen con IA">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i> IA: Describir
+                        </button>
+                    </div>
                     <input type="text" class="photo-desc-input form-control form-control-sm" value="${photo.description || ''}" placeholder="Ej. Detalle del trabajo realizado">
                 </div>
 
@@ -209,6 +214,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const dateInput = item.querySelector('.photo-date-input');
             const btnRemoveImg = item.querySelector('.btn-remove-image');
             const btnRemoveItem = item.querySelector('.btn-remove-photo-item');
+            const btnAiDesc = item.querySelector('.btn-ai-desc-photo');
 
             // Bind events for title
             titleInput.addEventListener('input', (e) => {
@@ -252,19 +258,49 @@ document.addEventListener('DOMContentLoaded', () => {
                 btnRemoveImg.classList.add('hidden');
                 dropIcon.classList.remove('hidden');
                 dropText.classList.remove('hidden');
+                if (btnAiDesc) btnAiDesc.classList.add('hidden');
                 updatePreview();
                 autosaveCurrentState();
             });
 
+            // Bind AI Description button click
+            if (btnAiDesc) {
+                btnAiDesc.addEventListener('click', async () => {
+                    if (!photo.base64) {
+                        showToast("Suba una imagen primero", true);
+                        return;
+                    }
+                    
+                    const originalBtnContent = btnAiDesc.innerHTML;
+                    btnAiDesc.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Describiendo...';
+                    btnAiDesc.disabled = true;
+                    
+                    try {
+                        const description = await describePhotoWithAI(photo.base64);
+                        photo.description = description;
+                        descInput.value = description;
+                        updatePreview();
+                        autosaveCurrentState();
+                        showToast("Foto descrita con éxito");
+                    } catch (error) {
+                        console.error("AI photo description failed:", error);
+                        showToast(`Error de IA: ${error.message}`, true);
+                    } finally {
+                        btnAiDesc.innerHTML = originalBtnContent;
+                        btnAiDesc.disabled = false;
+                    }
+                });
+            }
+
             // Setup drag and drop for this dynamic item
-            setupDynamicDragAndDrop(dropZone, fileInput, photo, previewImg, btnRemoveImg, dropIcon, dropText);
+            setupDynamicDragAndDrop(dropZone, fileInput, photo, previewImg, btnRemoveImg, dropIcon, dropText, btnAiDesc);
 
             photosEditorList.appendChild(item);
         });
     }
 
     // Setup drag and drop events for a dynamic zone
-    function setupDynamicDragAndDrop(dropZone, fileInput, photo, previewImg, btnRemoveImg, dropIcon, dropText) {
+    function setupDynamicDragAndDrop(dropZone, fileInput, photo, previewImg, btnRemoveImg, dropIcon, dropText, btnAiDesc) {
         // Drag events
         ['dragenter', 'dragover'].forEach(eventName => {
             dropZone.addEventListener(eventName, (e) => {
@@ -287,7 +323,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const dt = e.dataTransfer;
             const files = dt.files;
             if (files.length > 0) {
-                handleDynamicImageUpload(files[0], photo, previewImg, btnRemoveImg, dropIcon, dropText);
+                handleDynamicImageUpload(files[0], photo, previewImg, btnRemoveImg, dropIcon, dropText, btnAiDesc);
             }
         }, false);
 
@@ -300,13 +336,13 @@ document.addEventListener('DOMContentLoaded', () => {
         // File input changed
         fileInput.addEventListener('change', (e) => {
             if (fileInput.files.length > 0) {
-                handleDynamicImageUpload(fileInput.files[0], photo, previewImg, btnRemoveImg, dropIcon, dropText);
+                handleDynamicImageUpload(fileInput.files[0], photo, previewImg, btnRemoveImg, dropIcon, dropText, btnAiDesc);
             }
         });
     }
 
     // Handle dynamic image upload
-    function handleDynamicImageUpload(file, photo, previewImg, btnRemoveImg, dropIcon, dropText) {
+    function handleDynamicImageUpload(file, photo, previewImg, btnRemoveImg, dropIcon, dropText, btnAiDesc) {
         if (!file || !file.type.startsWith('image/')) {
             showToast("Error: El archivo seleccionado no es una imagen válida", true);
             return;
@@ -323,6 +359,7 @@ document.addEventListener('DOMContentLoaded', () => {
             btnRemoveImg.classList.remove('hidden');
             dropIcon.classList.add('hidden');
             dropText.classList.add('hidden');
+            if (btnAiDesc) btnAiDesc.classList.remove('hidden');
             
             updatePreview();
             autosaveCurrentState();
@@ -881,7 +918,352 @@ document.addEventListener('DOMContentLoaded', () => {
         console.warn("Speech Recognition API is not supported in this browser.");
     }
 
+    // --- AI Assistant Logic ---
+    const fieldApiKey = document.getElementById('field-api-key');
+    const btnToggleApiKey = document.getElementById('btn-toggle-api-key');
+    const btnTestConnection = document.getElementById('btn-test-connection');
+    const aiConnectionStatus = document.getElementById('ai-connection-status');
+
+    const btnAiImproveDesc = document.getElementById('btn-ai-improve-desc');
+    const btnAiExpandDesc = document.getElementById('btn-ai-expand-desc');
+    const btnAiGenConclusions = document.getElementById('btn-ai-gen-conclusions');
+    const btnAiImproveConclusions = document.getElementById('btn-ai-improve-conclusions');
+
+    // Retrieve key
+    function getApiKey() {
+        return localStorage.getItem('gemsa_openai_api_key') || '';
+    }
+
+    // Set UI value of API Key
+    function initApiKeyUI() {
+        const key = getApiKey();
+        if (fieldApiKey) {
+            fieldApiKey.value = key;
+            if (key) {
+                updateStatusBadge('offline', 'Listo');
+            } else {
+                updateStatusBadge('offline', 'Sin configurar');
+            }
+        }
+    }
+
+    function updateStatusBadge(status, message = '') {
+        if (!aiConnectionStatus) return;
+        
+        aiConnectionStatus.className = 'status-badge';
+        
+        if (status === 'offline') {
+            aiConnectionStatus.classList.add('status-offline');
+            aiConnectionStatus.textContent = message || 'Listo';
+        } else if (status === 'connecting') {
+            aiConnectionStatus.classList.add('status-connecting');
+            aiConnectionStatus.textContent = message || 'Conectando...';
+        } else if (status === 'online') {
+            aiConnectionStatus.classList.add('status-online');
+            aiConnectionStatus.textContent = message || 'Conectado';
+        }
+    }
+
+    async function callOpenAI(messages, maxTokens = 1000) {
+        const apiKey = fieldApiKey ? fieldApiKey.value.trim() : getApiKey();
+        if (!apiKey) {
+            throw new Error("API Key no configurada.");
+        }
+
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`
+            },
+            body: JSON.stringify({
+                model: 'gpt-4o-mini',
+                messages: messages,
+                max_tokens: maxTokens,
+                temperature: 0.7
+            })
+        });
+
+        if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            const errMessage = errData.error?.message || `Error HTTP ${response.status}`;
+            throw new Error(errMessage);
+        }
+
+        const data = await response.json();
+        return data.choices[0].message.content.trim();
+    }
+
+    async function describePhotoWithAI(base64DataUrl) {
+        const apiKey = fieldApiKey ? fieldApiKey.value.trim() : getApiKey();
+        if (!apiKey) {
+            throw new Error("API Key no configurada.");
+        }
+
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`
+            },
+            body: JSON.stringify({
+                model: 'gpt-4o-mini',
+                messages: [
+                    {
+                        role: 'system',
+                        content: 'Eres un técnico senior en inspecciones de GEMSA. Tu labor es observar la imagen provista y redactar una descripción técnica concisa (máximo 15-20 palabras) para un reporte fotográfico. Identifica los elementos principales, el estado de los componentes o la acción realizada. Responde directamente con la descripción técnica breve en español, sin preámbulos.'
+                    },
+                    {
+                        role: 'user',
+                        content: [
+                            {
+                                type: 'text',
+                                text: 'Describe esta fotografía técnica de manera concisa:'
+                            },
+                            {
+                                type: 'image_url',
+                                image_url: {
+                                    url: base64DataUrl
+                                }
+                            }
+                        ]
+                    }
+                ],
+                max_tokens: 150,
+                temperature: 0.5
+            })
+        });
+
+        if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            const errMessage = errData.error?.message || `Error HTTP ${response.status}`;
+            throw new Error(errMessage);
+        }
+
+        const data = await response.json();
+        return data.choices[0].message.content.trim();
+    }
+
+    async function testOpenAIConnection() {
+        updateStatusBadge('connecting', 'Probando...');
+        if (btnTestConnection) btnTestConnection.disabled = true;
+        
+        try {
+            const reply = await callOpenAI([
+                { role: 'user', content: 'Responde solo con la palabra OK.' }
+            ], 10);
+            
+            if (reply.toUpperCase().includes('OK')) {
+                updateStatusBadge('online');
+                showToast("Conexión con OpenAI exitosa");
+            } else {
+                throw new Error("Respuesta inesperada de la API");
+            }
+        } catch (error) {
+            console.error("Connection test failed:", error);
+            updateStatusBadge('offline', 'Error');
+            showToast(`Error de conexión: ${error.message}`, true);
+        } finally {
+            if (btnTestConnection) btnTestConnection.disabled = false;
+        }
+    }
+
+    async function handleImproveDescription() {
+        const desc = fieldDescription.value.trim();
+        if (!desc) {
+            showToast("La descripción técnica está vacía", true);
+            return;
+        }
+
+        const originalBtnText = btnAiImproveDesc.innerHTML;
+        btnAiImproveDesc.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Procesando...';
+        btnAiImproveDesc.disabled = true;
+
+        try {
+            const improvedText = await callOpenAI([
+                {
+                    role: 'system',
+                    content: 'Eres un redactor técnico experto en ingeniería y servicios generales para GEMSA. Tu trabajo es mejorar la ortografía, gramática, vocabulario y coherencia del texto proporcionado por el usuario. Debe sonar profesional, preciso y técnico. Mantén todos los detalles y datos fácticos intactos. Responde ÚNICAMENTE con el texto corregido, sin explicaciones ni saludos.'
+                },
+                { role: 'user', content: desc }
+            ]);
+
+            fieldDescription.value = improvedText;
+            reportData.description = improvedText;
+            updatePreview();
+            autosaveCurrentState();
+            showToast("Descripción mejorada con IA");
+        } catch (error) {
+            console.error("Improve description failed:", error);
+            showToast(`Error: ${error.message}`, true);
+        } finally {
+            btnAiImproveDesc.innerHTML = originalBtnText;
+            btnAiImproveDesc.disabled = false;
+        }
+    }
+
+    async function handleExpandDescription() {
+        const desc = fieldDescription.value.trim();
+        const serviceTitle = fieldName.value.trim();
+        if (!desc) {
+            showToast("Escribe algunas palabras clave antes de expandir", true);
+            return;
+        }
+
+        const originalBtnText = btnAiExpandDesc.innerHTML;
+        btnAiExpandDesc.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Expandiendo...';
+        btnAiExpandDesc.disabled = true;
+
+        try {
+            const expandedText = await callOpenAI([
+                {
+                    role: 'system',
+                    content: 'Eres un ingeniero técnico senior para GEMSA Servicios Generales. Tu tarea es expandir las notas breves o apuntes del usuario en una descripción técnica detallada, profesional y estructurada. Agrega la terminología técnica correcta, el procedimiento estándar y los aspectos de seguridad típicos para este tipo de servicio. Mantén un tono formal y objetivo. Responde ÚNICAMENTE con el texto final generado, sin introducciones ni comentarios.'
+                },
+                {
+                    role: 'user',
+                    content: `Servicio: ${serviceTitle || "Servicio General"}\nNotas iniciales:\n${desc}`
+                }
+            ]);
+
+            fieldDescription.value = expandedText;
+            reportData.description = expandedText;
+            updatePreview();
+            autosaveCurrentState();
+            showToast("Descripción detallada generada con IA");
+        } catch (error) {
+            console.error("Expand description failed:", error);
+            showToast(`Error: ${error.message}`, true);
+        } finally {
+            btnAiExpandDesc.innerHTML = originalBtnText;
+            btnAiExpandDesc.disabled = false;
+        }
+    }
+
+    async function handleGenerateConclusions() {
+        const serviceTitle = fieldName.value.trim();
+        const desc = fieldDescription.value.trim();
+        
+        if (!desc) {
+            showToast("Se requiere la descripción técnica para deducir las conclusiones", true);
+            return;
+        }
+
+        const originalBtnText = btnAiGenConclusions.innerHTML;
+        btnAiGenConclusions.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generando...';
+        btnAiGenConclusions.disabled = true;
+
+        try {
+            const resultText = await callOpenAI([
+                {
+                    role: 'system',
+                    content: 'Eres un consultor técnico para GEMSA. Con base en la descripción del servicio técnico ejecutado, genera una lista profesional de Conclusiones claras y Recomendaciones preventivas/correctivas útiles para el cliente. Presenta las conclusiones bajo el título "CONCLUSIONES:" y las recomendaciones bajo el título "RECOMENDACIONES:", separadas por una línea en blanco. Cada punto debe ser directo, técnico y formal. Responde ÚNICAMENTE con el texto de conclusiones y recomendaciones, sin rodeos.'
+                },
+                {
+                    role: 'user',
+                    content: `Servicio Técnico: ${serviceTitle || "Servicio no especificado"}\n\nDescripción del Servicio:\n${desc}`
+                }
+            ]);
+
+            fieldConclusions.value = resultText;
+            reportData.conclusions = resultText;
+            updatePreview();
+            autosaveCurrentState();
+            showToast("Conclusiones y Recomendaciones generadas con IA");
+        } catch (error) {
+            console.error("Generate conclusions failed:", error);
+            showToast(`Error: ${error.message}`, true);
+        } finally {
+            btnAiGenConclusions.innerHTML = originalBtnText;
+            btnAiGenConclusions.disabled = false;
+        }
+    }
+
+    async function handleImproveConclusions() {
+        const conclusions = fieldConclusions.value.trim();
+        if (!conclusions) {
+            showToast("Las conclusiones están vacías", true);
+            return;
+        }
+
+        const originalBtnText = btnAiImproveConclusions.innerHTML;
+        btnAiImproveConclusions.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Procesando...';
+        btnAiImproveConclusions.disabled = true;
+
+        try {
+            const improvedText = await callOpenAI([
+                {
+                    role: 'system',
+                    content: 'Mejora el estilo y la redacción de las conclusiones y recomendaciones proporcionadas. Mantén la estructura de viñetas, corrige la ortografía y asegúrate de que el tono sea sumamente formal y profesional. Responde ÚNICAMENTE con el texto corregido.'
+                },
+                { role: 'user', content: conclusions }
+            ]);
+
+            fieldConclusions.value = improvedText;
+            reportData.conclusions = improvedText;
+            updatePreview();
+            autosaveCurrentState();
+            showToast("Conclusiones mejoradas con IA");
+        } catch (error) {
+            console.error("Improve conclusions failed:", error);
+            showToast(`Error: ${error.message}`, true);
+        } finally {
+            btnAiImproveConclusions.innerHTML = originalBtnText;
+            btnAiImproveConclusions.disabled = false;
+        }
+    }
+
+    // --- AI Event Listeners ---
+    if (fieldApiKey) {
+        fieldApiKey.addEventListener('input', (e) => {
+            const val = e.target.value.trim();
+            localStorage.setItem('gemsa_openai_api_key', val);
+            if (val) {
+                updateStatusBadge('offline', 'Listo');
+            } else {
+                updateStatusBadge('offline', 'Sin configurar');
+            }
+        });
+    }
+
+    if (btnToggleApiKey && fieldApiKey) {
+        btnToggleApiKey.addEventListener('click', () => {
+            const icon = btnToggleApiKey.querySelector('i');
+            if (fieldApiKey.type === 'password') {
+                fieldApiKey.type = 'text';
+                if (icon) icon.className = "fa-solid fa-eye-slash";
+            } else {
+                fieldApiKey.type = 'password';
+                if (icon) icon.className = "fa-solid fa-eye";
+            }
+        });
+    }
+
+    if (btnTestConnection) {
+        btnTestConnection.addEventListener('click', testOpenAIConnection);
+    }
+
+    if (btnAiImproveDesc) {
+        btnAiImproveDesc.addEventListener('click', handleImproveDescription);
+    }
+
+    if (btnAiExpandDesc) {
+        btnAiExpandDesc.addEventListener('click', handleExpandDescription);
+    }
+
+    if (btnAiGenConclusions) {
+        btnAiGenConclusions.addEventListener('click', handleGenerateConclusions);
+    }
+
+    if (btnAiImproveConclusions) {
+        btnAiImproveConclusions.addEventListener('click', handleImproveConclusions);
+    }
+
+    // Window global reference for describePhotoWithAI so dynamic buttons can access it
+    window.describePhotoWithAI = describePhotoWithAI;
+
     // --- App Start ---
+    initApiKeyUI();
     loadAutosave();
     renderDraftsList();
 });

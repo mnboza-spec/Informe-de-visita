@@ -1139,6 +1139,120 @@ textarea.form-control {
 }
 
 /* ==========================================================================
+   AI ASSISTANT AND KEY CONFIGURATION STYLES
+   ========================================================================== */
+.ai-settings-card {
+    border-left: 4px solid var(--accent);
+}
+
+.ai-status-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 12px;
+    gap: 10px;
+}
+
+.status-badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 4px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-offline {
+    background-color: rgba(148, 163, 184, 0.15);
+    color: var(--text-muted);
+    border: 1px solid rgba(148, 163, 184, 0.3);
+}
+
+.status-connecting {
+    background-color: rgba(245, 158, 11, 0.15);
+    color: var(--warning);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    animation: pulse-glow 1.5s infinite alternate;
+}
+
+.status-online {
+    background-color: rgba(16, 185, 129, 0.15);
+    color: var(--success);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+@keyframes pulse-glow {
+    0% { opacity: 0.6; }
+    100% { opacity: 1; }
+}
+
+.ai-action-bar {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+}
+
+.btn-ai {
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    color: #ffffff !important;
+    border: none;
+    transition: all var(--transition-speed);
+    padding: 6px 12px;
+    font-size: 0.75rem;
+}
+
+.btn-ai:hover {
+    background: linear-gradient(135deg, #4338ca, #6d28d9);
+    box-shadow: 0 0 8px rgba(124, 58, 237, 0.4);
+    transform: translateY(-1px);
+}
+
+.btn-ai:disabled {
+    background: #475569;
+    cursor: not-allowed;
+    opacity: 0.7;
+    transform: none;
+    box-shadow: none;
+}
+
+.btn-ai-desc-photo {
+    font-size: 0.75rem;
+    padding: 4px 8px;
+    border-radius: 4px;
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    color: white;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.2s;
+    font-family: inherit;
+    font-weight: 600;
+}
+
+.btn-ai-desc-photo:hover {
+    background: linear-gradient(135deg, #4338ca, #6d28d9);
+    box-shadow: 0 0 6px rgba(124, 58, 237, 0.4);
+    transform: translateY(-1px);
+}
+
+.btn-ai-desc-photo:disabled {
+    background: #475569;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+/* ==========================================================================
    PRINT MEDIA RULES (Crucial for PDF generation)
    ========================================================================== */
 @media print {
