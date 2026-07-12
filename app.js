@@ -24,9 +24,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const inputImport = document.getElementById('input-import');
     const btnReset = document.getElementById('btn-reset');
     const btnGenCode = document.getElementById('btn-gen-code');
-    const btnSaveDraft = document.getElementById('btn-save-draft');
-    const draftsListContainer = document.getElementById('drafts-list');
     const btnAddPhoto = document.getElementById('btn-add-photo');
+    const btnAddMultiplePhotos = document.getElementById('btn-add-multiple-photos');
+    const inputAddMultiplePhotos = document.getElementById('input-add-multiple-photos');
     
     // Document Preview elements
     const prevClient = document.getElementById('prev-client');
@@ -479,6 +479,50 @@ document.addEventListener('DOMContentLoaded', () => {
         addNewPhoto();
     });
 
+    if (btnAddMultiplePhotos && inputAddMultiplePhotos) {
+        btnAddMultiplePhotos.addEventListener('click', () => {
+            inputAddMultiplePhotos.click();
+        });
+
+        inputAddMultiplePhotos.addEventListener('change', (e) => {
+            if (e.target.files && e.target.files.length > 0) {
+                const files = Array.from(e.target.files).filter(f => f.type.startsWith('image/'));
+                if (files.length === 0) {
+                    showToast("Por favor seleccione imágenes válidas", true);
+                    return;
+                }
+                
+                let loadedCount = 0;
+                files.forEach((file) => {
+                    const reader = new FileReader();
+                    reader.onload = (evt) => {
+                        const base64 = evt.target.result;
+                        const id = 'photo-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+                        const datetime = getLocalDateTimeString();
+                        const photoTitle = `Foto ${reportData.photos.length + 1}`;
+                        reportData.photos.push({
+                            id: id,
+                            title: photoTitle,
+                            base64: base64,
+                            description: '',
+                            datetime: datetime
+                        });
+                        
+                        loadedCount++;
+                        if (loadedCount === files.length) {
+                            renderEditorPhotos();
+                            updatePreview();
+                            autosaveCurrentState();
+                            showToast(`${loadedCount} fotos agregadas`);
+                        }
+                    };
+                    reader.readAsDataURL(file);
+                });
+            }
+            inputAddMultiplePhotos.value = '';
+        });
+    }
+
     // Abrir Archivo trigger
     const btnImportTrigger = document.getElementById('btn-import-trigger');
     if (btnImportTrigger) {
@@ -674,101 +718,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Save a draft permanently into LocalStorage
-    btnSaveDraft.addEventListener('click', () => {
-        if (!reportData.client && !reportData.name) {
-            showToast("Complete al menos el Cliente o el Servicio para guardar un borrador", true);
-            return;
-        }
-
-        const drafts = getDrafts();
-        const draftId = reportData.code || `draft-${Date.now()}`;
-        
-        // Overwrite or create new
-        drafts[draftId] = {
-            id: draftId,
-            timestamp: Date.now(),
-            data: reportData
-        };
-
-        localStorage.setItem('gemsa_report_drafts', JSON.stringify(drafts));
-        renderDraftsList();
-        showToast("Borrador guardado exitosamente");
-    });
-
-    // Helper: get list of drafts
-    function getDrafts() {
-        const draftsRaw = localStorage.getItem('gemsa_report_drafts');
-        return draftsRaw ? JSON.parse(draftsRaw) : {};
-    }
-
-    // Render Drafts into sidebar panel
-    function renderDraftsList() {
-        const drafts = getDrafts();
-        const draftIds = Object.keys(drafts).sort((a, b) => drafts[b].timestamp - drafts[a].timestamp);
-        
-        if (draftIds.length === 0) {
-            draftsListContainer.innerHTML = '<p class="no-drafts-text">No hay borradores guardados localmente.</p>';
-            return;
-        }
-
-        draftsListContainer.innerHTML = '';
-        
-        draftIds.forEach(id => {
-            const draft = drafts[id];
-            const item = document.createElement('div');
-            item.className = 'draft-item';
-            
-            const dateObj = new Date(draft.timestamp);
-            const formattedTime = `${String(dateObj.getDate()).padStart(2, '0')}/${String(dateObj.getMonth() + 1).padStart(2, '0')} ${String(dateObj.getHours()).padStart(2, '0')}:${String(dateObj.getMinutes()).padStart(2, '0')}`;
-            
-            item.innerHTML = `
-                <div class="draft-info">
-                    <span class="draft-title" title="${draft.data.client || 'Sin Cliente'}">${draft.data.client || 'Sin Cliente'}</span>
-                    <span class="draft-meta">${draft.data.name || 'Sin Título'} | ${formattedTime}</span>
-                </div>
-                <button class="btn-draft-del" title="Eliminar borrador"><i class="fa-solid fa-trash-can"></i></button>
-            `;
-            
-            // Load draft click
-            item.addEventListener('click', (e) => {
-                if (e.target.closest('.btn-draft-del')) return; // ignore delete click
-                
-                if (confirm(`¿Cargar el borrador para ${draft.data.client || 'Sin Cliente'}? Se reemplazarán los datos actuales.`)) {
-                    let draftData = JSON.parse(JSON.stringify(draft.data));
-                    draftData = migrateOldReportData(draftData);
-                    reportData = draftData;
-                    
-                    fieldClient.value = reportData.client;
-                    fieldCode.value = reportData.code;
-                    fieldDate.value = reportData.date;
-                    fieldName.value = reportData.name;
-                    fieldContact.value = reportData.contact;
-                    fieldDescription.value = reportData.description;
-                    fieldConclusions.value = reportData.conclusions;
-                    
-                    renderEditorPhotos();
-                    updatePreview();
-                    autosaveCurrentState();
-                    showToast("Borrador cargado");
-                }
-            });
-            
-            // Delete draft click
-            item.querySelector('.btn-draft-del').addEventListener('click', (e) => {
-                e.stopPropagation();
-                if (confirm("¿Está seguro de que desea eliminar este borrador?")) {
-                    const currentDrafts = getDrafts();
-                    delete currentDrafts[id];
-                    localStorage.setItem('gemsa_report_drafts', JSON.stringify(currentDrafts));
-                    renderDraftsList();
-                    showToast("Borrador eliminado");
-                }
-            });
-            
-            draftsListContainer.appendChild(item);
-        });
-    }
 
     // --- Mobile Tabs Logic ---
     const tabEditMode = document.getElementById('tab-edit-mode');
@@ -1283,5 +1232,4 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- App Start ---
     initApiKeyUI();
     loadAutosave();
-    renderDraftsList();
 });

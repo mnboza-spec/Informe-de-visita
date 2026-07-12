@@ -149,9 +149,13 @@
                     <div id="photos-editor-list">
                         <!-- Rendered via JS -->
                     </div>
-                    <button id="btn-add-photo" class="btn btn-secondary w-100 mt-2">
-                        <i class="fa-solid fa-plus"></i> Agregar Foto
+                    <button id="btn-add-photo" class="btn btn-outline-secondary w-100 mt-2" title="Agregar espacio vacío">
+                        <i class="fa-solid fa-plus"></i> Agregar Espacio para Foto
                     </button>
+                    <button id="btn-add-multiple-photos" class="btn btn-secondary w-100 mt-2">
+                        <i class="fa-solid fa-images"></i> Cargar Varias Fotos a la Vez
+                    </button>
+                    <input type="file" id="input-add-multiple-photos" accept="image/*" multiple style="display: none;">
                 </section>
 
                 <!-- Conclusions and Recommendations -->
@@ -176,17 +180,6 @@
                     </div>
                 </section>
 
-                <!-- Saved Drafts Section -->
-                <section class="editor-card drafts-card">
-                    <h3 class="card-title"><i class="fa-solid fa-folder-open"></i> Informes Guardados (Borradores)</h3>
-                    <div id="drafts-list" class="drafts-list">
-                        <!-- Rendered via JS -->
-                        <p class="no-drafts-text">No hay borradores guardados localmente.</p>
-                    </div>
-                    <button id="btn-save-draft" class="btn btn-secondary w-100 mt-2">
-                        <i class="fa-solid fa-floppy-disk"></i> Guardar Borrador Local
-                    </button>
-                </section>
             </div>
             
             <footer class="sidebar-footer">
